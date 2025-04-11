@@ -97,33 +97,59 @@ class _BuscaCepPageState extends State<BuscaCepPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('CRUD de Endereços'),
+        title: Row(
+          children: [
+            Icon(Icons.location_on_outlined),
+            SizedBox(width: 8),
+            Text('CRUD de Endereços'),
+          ],
+        ),
         centerTitle: true,
       ),
       body: Padding(
         padding: EdgeInsets.all(20),
         child: Column(
           children: [
-            TextField(
-              controller: _cepController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: 'Digite o CEP'),
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 4),
+              child: TextField(
+                controller: _cepController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Digite o CEP',
+                  prefixIcon: Icon(Icons.pin_drop),
+                ),
+              ),
             ),
-            SizedBox(height: 12),
-            TextField(
-              controller: _complementoController,
-              decoration: InputDecoration(labelText: 'Complemento'),
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 4),
+              child: TextField(
+                controller: _complementoController,
+                decoration: InputDecoration(
+                  labelText: 'Complemento',
+                  prefixIcon: Icon(Icons.note_add),
+                ),
+              ),
             ),
-            SizedBox(height: 12),
-            TextField(
-              controller: _numeroController,
-              decoration: InputDecoration(labelText: 'Número ou Lote'),
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 4),
+              child: TextField(
+                controller: _numeroController,
+                decoration: InputDecoration(
+                  labelText: 'Número ou Lote',
+                  prefixIcon: Icon(Icons.format_list_numbered),
+                ),
+              ),
             ),
-            SizedBox(height: 12),
-            TextField(
-              controller: _apartamentoController,
-              decoration: InputDecoration(
-                  labelText: 'Número do Apartamento (se for condomínio)'),
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 4),
+              child: TextField(
+                controller: _apartamentoController,
+                decoration: InputDecoration(
+                  labelText: 'Número do Apartamento',
+                  prefixIcon: Icon(Icons.apartment),
+                ),
+              ),
             ),
             SizedBox(height: 16),
             ElevatedButton.icon(
