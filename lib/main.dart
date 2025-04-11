@@ -181,9 +181,12 @@ class _BuscaCepPageState extends State<BuscaCepPage> {
                         children: [
                           Text("📮 CEP: ${endereco.cep}"),
                           Text("🏠 Logradouro: ${endereco.logradouro}"),
-                          Text("🧾 Complemento: ${endereco.complemento ?? 'N/A'}"),
-                          Text("🔢 Número ou Lote: ${endereco.numero ?? 'N/A'}"),
-                          Text("🏢 Apartamento: ${endereco.apartamento ?? 'N/A'}"),
+                          Text(
+                              "🧾 Complemento: ${endereco.complemento ?? 'N/A'}"),
+                          Text(
+                              "🔢 Número ou Lote: ${endereco.numero ?? 'N/A'}"),
+                          Text(
+                              "🏢 Apartamento: ${endereco.apartamento ?? 'N/A'}"),
                           Text("📍 Bairro: ${endereco.bairro}"),
                           Text("🌆 Cidade: ${endereco.localidade}"),
                           Text("🗺️ Estado: ${endereco.uf}"),
