@@ -49,27 +49,32 @@ class _BuscaCepPageState extends State<BuscaCepPage> {
 
     try {
       final endereco = await ViaCepService.buscarEnderecoPorCep(cep);
-      setState(() {
-        if (endereco != null) {
-          if (_enderecoEditando != null) {
-            _enderecos.remove(_enderecoEditando);
-          }
-          _enderecos.add(endereco.copyWith(
-            complemento: _complementoController.text,
-            numero: _numeroController.text,
-            apartamento: _apartamentoController.text,
-          ));
+      if (endereco != null) {
+        final enderecoAtualizado = endereco.copyWith(
+          complemento: _complementoController.text,
+          numero: _numeroController.text,
+          apartamento: _apartamentoController.text,
+        );
 
-          _erro = null;
-          _cepController.clear();
-          _complementoController.clear();
-          _numeroController.clear();
-          _apartamentoController.clear();
-          _enderecoEditando = null;
+        if (_enderecoEditando != null) {
+          final atualizado = enderecoAtualizado.copyWith(id: _enderecoEditando!.id);
+          await ViaCepService.atualizarEndereco(atualizado);
+          setState(() {
+            _enderecos[_enderecos.indexOf(_enderecoEditando!)] = atualizado;
+            _enderecoEditando = null;
+          });
         } else {
-          _erro = 'CEP não encontrado';
+          setState(() {
+            _enderecos.add(enderecoAtualizado);
+          });
         }
-      });
+
+        _limparCampos();
+      } else {
+        setState(() {
+          _erro = 'CEP não encontrado';
+        });
+      }
     } catch (e) {
       setState(() {
         _erro = 'Erro ao buscar o CEP';
@@ -77,20 +82,64 @@ class _BuscaCepPageState extends State<BuscaCepPage> {
     }
   }
 
-  void _deletarEndereco(int index) {
-    setState(() {
-      _enderecos.removeAt(index);
-    });
+  void _limparCampos() {
+    _cepController.clear();
+    _complementoController.clear();
+    _numeroController.clear();
+    _apartamentoController.clear();
+    _erro = null;
+  }
+
+  void _deletarEndereco(String? id) async {
+    if (id == null) return;
+
+    try {
+      await ViaCepService.deletarEndereco(id);
+      setState(() {
+        _enderecos.removeWhere((e) => e.id == id);
+      });
+    } catch (e) {
+      setState(() {
+        _erro = 'Erro ao deletar o endereço';
+      });
+    }
   }
 
   void _editarEndereco(Endereco endereco) {
     setState(() {
-      _cepController.text = endereco.cep;
+      _cepController.text = endereco.cep.replaceAll('-', '');
       _complementoController.text = endereco.complemento ?? '';
       _numeroController.text = endereco.numero ?? '';
       _apartamentoController.text = endereco.apartamento ?? '';
       _enderecoEditando = endereco;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarEnderecosSalvos();
+  }
+
+  Future<void> _carregarEnderecosSalvos() async {
+    try {
+      final enderecos = await ViaCepService.buscarTodosEnderecos();
+      setState(() {
+        _enderecos = enderecos;
+      });
+    } catch (e) {
+      setState(() {
+        _erro = 'Erro ao carregar endereços salvos';
+      });
+    }
+  }
+
+  /// ✅ AGORA está no lugar certo!
+  String _formatarCep(String cep) {
+    if (cep.length == 8) {
+      return '${cep.substring(0, 5)}-${cep.substring(5)}';
+    }
+    return cep;
   }
 
   @override
@@ -110,47 +159,10 @@ class _BuscaCepPageState extends State<BuscaCepPage> {
         padding: EdgeInsets.all(20),
         child: Column(
           children: [
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 4),
-              child: TextField(
-                controller: _cepController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Digite o CEP',
-                  prefixIcon: Icon(Icons.pin_drop),
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 4),
-              child: TextField(
-                controller: _complementoController,
-                decoration: InputDecoration(
-                  labelText: 'Complemento',
-                  prefixIcon: Icon(Icons.note_add),
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 4),
-              child: TextField(
-                controller: _numeroController,
-                decoration: InputDecoration(
-                  labelText: 'Número ou Lote',
-                  prefixIcon: Icon(Icons.format_list_numbered),
-                ),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 4),
-              child: TextField(
-                controller: _apartamentoController,
-                decoration: InputDecoration(
-                  labelText: 'Número do Apartamento',
-                  prefixIcon: Icon(Icons.apartment),
-                ),
-              ),
-            ),
+            _buildTextField(_cepController, 'Digite o CEP', Icons.pin_drop, TextInputType.number),
+            _buildTextField(_complementoController, 'Complemento', Icons.note_add),
+            _buildTextField(_numeroController, 'Número ou Lote', Icons.format_list_numbered),
+            _buildTextField(_apartamentoController, 'Número do Apartamento', Icons.apartment),
             SizedBox(height: 16),
             ElevatedButton.icon(
               icon: Icon(Icons.search),
@@ -179,14 +191,11 @@ class _BuscaCepPageState extends State<BuscaCepPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text("📮 CEP: ${endereco.cep}"),
+                          Text("📮 CEP: ${_formatarCep(endereco.cep)}"),
                           Text("🏠 Logradouro: ${endereco.logradouro}"),
-                          Text(
-                              "🧾 Complemento: ${endereco.complemento ?? 'N/A'}"),
-                          Text(
-                              "🔢 Número ou Lote: ${endereco.numero ?? 'N/A'}"),
-                          Text(
-                              "🏢 Apartamento: ${endereco.apartamento ?? 'N/A'}"),
+                          Text("🧾 Complemento: ${endereco.complemento ?? 'N/A'}"),
+                          Text("🔢 Número ou Lote: ${endereco.numero ?? 'N/A'}"),
+                          Text("🏢 Apartamento: ${endereco.apartamento ?? 'N/A'}"),
                           Text("📍 Bairro: ${endereco.bairro}"),
                           Text("🌆 Cidade: ${endereco.localidade}"),
                           Text("🗺️ Estado: ${endereco.uf}"),
@@ -199,7 +208,7 @@ class _BuscaCepPageState extends State<BuscaCepPage> {
                               ),
                               IconButton(
                                 icon: Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => _deletarEndereco(index),
+                                onPressed: () => _deletarEndereco(endereco.id),
                               ),
                             ],
                           ),
@@ -211,6 +220,20 @@ class _BuscaCepPageState extends State<BuscaCepPage> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String label, IconData icon, [TextInputType? keyboard]) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 4),
+      child: TextField(
+        controller: controller,
+        keyboardType: keyboard ?? TextInputType.text,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(icon),
         ),
       ),
     );

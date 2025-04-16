@@ -1,14 +1,16 @@
 class Endereco {
+  String? id;
   final String cep;
   final String logradouro;
   String complemento;
-  String numero;  // Agora o número é mutável
-  String apartamento;  // Agora o apartamento é mutável
+  String numero;
+  String apartamento;
   final String bairro;
   final String localidade;
   final String uf;
 
   Endereco({
+    this.id,
     required this.cep,
     required this.logradouro,
     required this.complemento,
@@ -19,27 +21,42 @@ class Endereco {
     required this.uf,
   });
 
-  // Método para criar um objeto Endereco a partir de um JSON
   factory Endereco.fromJson(Map<String, dynamic> json) {
     return Endereco(
+      id: json['id'], // mantém null se não vier
       cep: json['cep'] ?? '',
       logradouro: json['logradouro'] ?? '',
       complemento: json['complemento'] ?? '',
-      numero: json['numero'] ?? '',  // Pode ser vazio inicialmente
-      apartamento: json['apartamento'] ?? '',  // Pode ser vazio inicialmente
+      numero: json['numero'] ?? '',
+      apartamento: json['apartamento'] ?? '',
       bairro: json['bairro'] ?? '',
       localidade: json['localidade'] ?? '',
       uf: json['uf'] ?? '',
     );
   }
 
-  // Método copyWith para permitir alterações nos campos
+  Map<String, dynamic> toJson() {
+    return {
+      if (id != null) 'id': id,
+      'cep': cep,
+      'logradouro': logradouro,
+      'complemento': complemento,
+      'numero': numero,
+      'apartamento': apartamento,
+      'bairro': bairro,
+      'localidade': localidade,
+      'uf': uf,
+    };
+  }
+
   Endereco copyWith({
+    String? id,
     String? complemento,
     String? numero,
     String? apartamento,
   }) {
     return Endereco(
+      id: id ?? this.id,
       cep: this.cep,
       logradouro: this.logradouro,
       complemento: complemento ?? this.complemento,
